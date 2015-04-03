@@ -13,6 +13,10 @@ def standardize_y(y):
         y = np.reshape(y, (len(y), 1))
     return y
 
+def roundup(n, b):
+    return n/b + int((n%b)>0)
+
+
 class Sequential(object):
     def __init__(self):
         self.layers = []
@@ -80,7 +84,7 @@ class Sequential(object):
             if shuffle:
                 np.random.shuffle(index_array)
 
-            nb_batch = len(X)/batch_size+1
+            nb_batch = roundup(len(X), batch_size)
             progbar = Progbar(target=len(X))
             for batch_index in range(0, nb_batch):
                 batch_start = batch_index*batch_size
@@ -99,10 +103,8 @@ class Sequential(object):
                         progbar.update(batch_end, [('loss', loss), ('val. loss', self.test(X_val, y_val))])
             
     def predict_proba(self, X, batch_size=128):
-        for batch_index in range(0, len(X)/batch_size+1):
+        for batch_index in range(0, roundup(len(X),batch_size)):
             batch = range(batch_index*batch_size, min(len(X), (batch_index+1)*batch_size))
-            if not batch:
-                break
             batch_preds = self._predict(X[batch])
 
             if batch_index == 0:
@@ -121,10 +123,8 @@ class Sequential(object):
         y = standardize_y(y)
         av_score = 0.
         samples = 0
-        for batch_index in range(0, len(X)/batch_size+1):
+        for batch_index in range(0, roundup(len(X),batch_size)):
             batch = range(batch_index*batch_size, min(len(X), (batch_index+1)*batch_size))
-            if not batch:
-                break
             score = self._test(X[batch], y[batch])
             av_score += len(batch)*score
             samples += len(batch)
