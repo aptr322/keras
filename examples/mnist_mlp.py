@@ -32,22 +32,25 @@ y10_test = np_utils.to_categorical(y_test_set, 10)
 print "Building model..."
 model = Sequential()
 model.add(Dense(784, 1200, init='normal'))
+model.add(Activation('tanh'))
+#model.add(Dropout(0.5))
+model.add(Dense(1200, 1200, init='normal'))
 model.add(Activation('relu'))
-#model.add(Dense(1200,1200, init='normal'))
-#model.add(Activation('relu'))
 #model.add(BatchNormalization(input_shape=(800,)))
-model.add(Dropout(0.5))
+#model.add(Dropout(0.5))
 model.add(Dense(1200, 10, init='normal'))
 model.add(Activation('softmax'))
 
-sgd = SGD(lr=0.1, decay=0.0, momentum=0.2, nesterov=False)
-model.compile(loss='categorical_crossentropy', optimizer=sgd)
+sgd = SGD(lr=0.1, decay=0.0, momentum=0.2, nesterov=True) # , l1=0.5)
+#model.compile(loss='categorical_crossentropy', optimizer=sgd)
+ada_optimizer = Adadelta(l1=1.)
+model.compile(loss='categorical_crossentropy', optimizer=ada_optimizer)
 
 
 print "Training..."
-for step in range(0, 40):
-    print "step:", step
-    model.fit(x_train_set, y10_train, nb_epoch=1, batch_size=40)
+for step in range(0, 50):
+    print "Step:", step
+    model.fit(x_train_set, y10_train, nb_epoch=1, batch_size=100)
 
     score = model.evaluate(x_test_set, y10_test, batch_size=200)
     print 'Test score:', score
